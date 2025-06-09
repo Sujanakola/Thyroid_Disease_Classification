@@ -31,23 +31,6 @@ A web-based application that uses machine learning to classify thyroid condition
    python app.py
    ```
 
-### Deployment on Render
-
-1. Create a new account on [Render](https://render.com)
-2. Click "New +" and select "Web Service"
-3. Connect your GitHub repository
-4. Fill in the following details:
-   - Name: thyroid-classification
-   - Environment: Python 3
-   - Build Command: `pip install -r requirements.txt`
-   - Start Command: `gunicorn wsgi:app`
-5. Click "Create Web Service"
-
-## Environment Variables
-
-- `SECRET_KEY`: Session encryption key (optional)
-- `PORT`: Application port (default: 5000)
-
 ## Model Information
 
 The application uses a trained machine learning model to classify thyroid conditions into four categories:
@@ -55,8 +38,3 @@ The application uses a trained machine learning model to classify thyroid condit
 - Hypothyroid
 - Negative (Normal)
 - Sick
-
-## License
-
-MIT License
-
