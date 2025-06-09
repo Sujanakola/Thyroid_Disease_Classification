@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thyroid Disease Classification</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>Thyroid Disease Classification</h1>
+            <p class="subtitle">Enter your medical parameters for thyroid analysis</p>
+            <div class="header-info">
+                <div class="blood-test-notice">
+                    <i class="fas fa-flask"></i>
+                    <p>Please note: This tool requires values from your thyroid blood test results. Have your test
+                        results ready before proceeding.</p>
+                </div>
+                <button class="info-btn" onclick="showInfo()">
+                    <i class="fas fa-info-circle"></i> About Thyroid Tests
+                </button>
+            </div>
+        </header>
+
+        <form id="predictionForm" action="{{ url_for('predict')}}" method="post">
+            <div class="form-grid">
+                <!-- Laboratory Values Section -->
+                <div class="form-section">
+                    <h3>Laboratory Values</h3>
+
+                    <div class="input-group">
+                        <label for="TSH">TSH Level (mU/L)</label>
+                        <div class="input-with-tooltip">
+                            <input type="number" id="TSH" name="TSH" step="0.01" required min="0" max="100">
+                            <div class="tooltip">
+                                <strong>Thyroid Stimulating Hormone (TSH)</strong><br>
+                                • Normal Range: 0.4-4.0 mU/L<br>
+                                • Key hormone that regulates thyroid function
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="T3">T3 Level (ng/dL)</label>
+                        <div class="input-with-tooltip">
+                            <input type="number" id="T3" name="T3" step="0.01" required min="0" max="10">
+                            <div class="tooltip">
+                                <strong>Triiodothyronine (T3)</strong><br>
+                                • Normal Range: 0.6-1.8 ng/dL<br>
+                                • Active thyroid hormone
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="TT4">Total T4 (μg/dL)</label>
+                        <div class="input-with-tooltip">
+                            <input type="number" id="TT4" name="TT4" step="0.01" required min="0" max="30">
+                            <div class="tooltip">
+                                <strong>Total Thyroxine (T4)</strong><br>
+                                • Normal Range: 5.0-12.0 μg/dL<br>
+                                • Main thyroid hormone
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="T4U">T4U Ratio</label>
+                        <div class="input-with-tooltip">
+                            <input type="number" id="T4U" name="T4U" step="0.01" required min="0" max="3">
+                            <div class="tooltip">
+                                <strong>T4 Uptake Ratio</strong><br>
+                                • Normal Range: 0.75-1.25<br>
+                                • Helps assess thyroid binding
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="FTI">FTI (Free Thyroxine Index)</label>
+                        <div class="input-with-tooltip">
+                            <input type="number" id="FTI" name="FTI" step="0.01" required min="0" max="200">
+                            <div class="tooltip">
+                                <strong>Free Thyroxine Index (FTI)</strong><br>
+                                • Normal Range: 6.0-12.0<br>
+                                • Estimates free T4 level
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Information -->
+                <div class="form-section">
+                    <h3>Patient Information</h3>
+
+                    <div class="input-group">
+                        <label for="sex">Biological Sex</label>
+                        <div class="input-with-tooltip">
+                            <select id="sex" name="sex" required>
+                                <option value="sex_M">Male</option>
+                                <option value="sex_F">Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="pregnant">Pregnancy Status</label>
+                        <div class="input-with-tooltip">
+                            <select id="pregnant" name="pregnant" required>
+                                <option value="pregnant_f">No</option>
+                                <option value="pregnant_t">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="sick">Currently Sick</label>
+                        <div class="input-with-tooltip">
+                            <select id="sick" name="sick" required>
+                                <option value="sick_f">No</option>
+                                <option value="sick_t">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical History -->
+                <div class="form-section">
+                    <h3>Medical History</h3>
+
+                    <div class="input-group">
+                        <label for="thyroid_surgery">Previous Thyroid Surgery</label>
+                        <div class="input-with-tooltip">
+                            <select id="thyroid_surgery" name="thyroid_surgery" required>
+                                <option value="thyroid_surgery_f">No</option>
+                                <option value="thyroid_surgery_t">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="goitre">Goitre</label>
+                        <div class="input-with-tooltip">
+                            <select id="goitre" name="goitre" required>
+                                <option value="goitre_f">No</option>
+                                <option value="goitre_t">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="tumor">Thyroid Tumor</label>
+                        <div class="input-with-tooltip">
+                            <select id="tumor" name="tumor" required>
+                                <option value="tumor_f">No</option>
+                                <option value="tumor_t">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="predict-btn" id="submitBtn">
+                <span class="btn-text">Analyze Thyroid Function</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Analyzing your test results...</p>
+        </div>
+
+        <div id="resultContainer">
+            {% if y %}
+            <div class="result {% if 'Error' in y %}error{% endif %}" id="resultSection">
+                <div class="result-header">
+                    <h2>{{ y }}</h2>
+                    {% if explanation %}
+                    <button class="toggle-details-btn" onclick="toggleDetails()">
+                        <span class="show-text">Show Details</span>
+                        <span class="hide-text">Hide Details</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    {% endif %}
+                </div>
+
+                {% if explanation %}
+                <div class="explanation" id="explanationDetails" style="display: none;">
+                    <div class="condition-summary">
+                        {% if explanation.prediction == 'HYPERTHYROID' %}
+                        <div class="condition-info">
+                            <h3>What is Hyperthyroidism?</h3>
+                            <p>Hyperthyroidism is a condition where your thyroid gland produces too much thyroid
+                                hormone.
+                                This can speed up your body's metabolism, leading to various symptoms.</p>
+
+                            <div class="common-symptoms">
+                                <h4>Common Symptoms:</h4>
+                                <ul>
+                                    <li>Rapid heartbeat or palpitations</li>
+                                    <li>Anxiety, nervousness, or irritability</li>
+                                    <li>Unexplained weight loss</li>
+                                    <li>Increased sweating and heat sensitivity</li>
+                                    <li>Tremors in hands and fingers</li>
+                                    <li>Sleep problems</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% elif explanation.prediction == 'HYPOTHYROID' %}
+                        <div class="condition-info">
+                            <h3>What is Hypothyroidism?</h3>
+                            <p>Hypothyroidism occurs when your thyroid gland doesn't produce enough thyroid hormone.
+                                This
+                                slows down your body's metabolism and can affect various bodily functions.</p>
+
+                            <div class="common-symptoms">
+                                <h4>Common Symptoms:</h4>
+                                <ul>
+                                    <li>Fatigue and weakness</li>
+                                    <li>Weight gain</li>
+                                    <li>Cold sensitivity</li>
+                                    <li>Depression</li>
+                                    <li>Joint and muscle pain</li>
+                                    <li>Dry skin and hair</li>
+                                </ul>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="analysis-details">
+                        <h3>Your Test Analysis:</h3>
+                        {% if explanation.abnormal_values %}
+                        <div class="abnormal-values">
+                            <h4>Abnormal Laboratory Values:</h4>
+                            <ul>
+                                {% for value in explanation.abnormal_values %}
+                                <li class="value-item">
+                                    <div class="value-header">
+                                        <strong>{{ value.name }} ({{ value.feature }}):</strong>
+                                        <span class="value-status {{ value.status.lower() }}">{{ value.status }}</span>
+                                    </div>
+                                    <div class="value-details">
+                                        <span class="current-value">Current: {{ value.value }} {{ value.unit }}</span>
+                                        <span class="normal-range">Normal range: {{ value.normal_range }} {{ value.unit
+                                            }}</span>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        {% if explanation.risk_factors %}
+                        <div class="risk-factors">
+                            <h4>Additional Risk Factors:</h4>
+                            <ul>
+                                {% for factor in explanation.risk_factors %}
+                                <li>{{ factor }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="next-steps">
+                        <h4>Recommended Next Steps:</h4>
+                        <ul>
+                            <li>Consult with a healthcare provider to discuss these results</li>
+                            <li>Bring a copy of your complete thyroid test results</li>
+                            <li>Keep track of any symptoms you're experiencing</li>
+                            <li>Don't make any changes to medications without consulting your doctor</li>
+                        </ul>
+                        <div class="disclaimer">
+                            <p><strong>Important:</strong> This is an automated analysis and should not be used as a
+                                final
+                                diagnosis. Always consult with a healthcare professional for proper medical advice and
+                                treatment.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Modal for Info -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Understanding Thyroid Tests</h2>
+
+            <div class="info-section about-tool">
+                <h3>About This Tool</h3>
+                <p>This web-based Thyroid Disease Classifier uses advanced machine learning models to analyze key
+                    hormone values from a thyroid function test and predict conditions like hyperthyroidism,
+                    hypothyroidism, or other abnormalities. It serves as a decision-support tool for early detection,
+                    self-assessment, and educational purposes.</p>
+                <div class="tool-features">
+                    <h4>Key Features:</h4>
+                    <ul>
+                        <li>Analysis of multiple thyroid hormone parameters</li>
+                        <li>Instant classification of thyroid conditions</li>
+                        <li>Detailed explanations of test results</li>
+                        <li>Educational information about thyroid function</li>
+                    </ul>
+                </div>
+                <div class="usage-note">
+                    <p><strong>Important:</strong> This tool requires actual blood test results for accurate analysis.
+                        Please ensure you have your thyroid function test results available before using the tool.</p>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>What is the Thyroid?</h3>
+                <p>The thyroid is a butterfly-shaped gland in your neck that produces hormones regulating metabolism,
+                    growth, and body temperature.</p>
+            </div>
+
+            <div class="info-section">
+                <h3>Key Laboratory Values:</h3>
+                <ul>
+                    <li>
+                        <strong>TSH (Thyroid Stimulating Hormone)</strong>
+                        <p>The primary test for thyroid function. High levels suggest hypothyroidism, while low levels
+                            suggest hyperthyroidism.</p>
+                    </li>
+                    <li>
+                        <strong>T3 (Triiodothyronine)</strong>
+                        <p>The active form of thyroid hormone that affects metabolism, growth, and development.</p>
+                    </li>
+                    <li>
+                        <strong>T4 (Thyroxine)</strong>
+                        <p>The main hormone produced by the thyroid gland, which is converted to T3 in tissues.</p>
+                    </li>
+                    <li>
+                        <strong>T4U (T4 Uptake)</strong>
+                        <p>Helps evaluate the protein binding of thyroid hormones.</p>
+                    </li>
+                    <li>
+                        <strong>FTI (Free Thyroxine Index)</strong>
+                        <p>Estimates the amount of free (active) thyroid hormone available.</p>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="info-section">
+                <h3>Common Thyroid Conditions:</h3>
+                <ul>
+                    <li>
+                        <strong>Hyperthyroidism</strong>
+                        <p>Overactive thyroid producing too much hormone.</p>
+                    </li>
+                    <li>
+                        <strong>Hypothyroidism</strong>
+                        <p>Underactive thyroid not producing enough hormone.</p>
+                    </li>
+                    <li>
+                        <strong>Goitre</strong>
+                        <p>Enlargement of the thyroid gland.</p>
+                    </li>
+                    <li>
+                        <strong>Thyroid Nodules</strong>
+                        <p>Lumps in the thyroid that may be benign or malignant.</p>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="disclaimer">
+                <p><strong>Important Note:</strong> This tool is for screening purposes only and should not replace
+                    professional medical advice. Always consult with a healthcare provider for proper diagnosis and
+                    treatment.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 Thyroid Disease Classification System | <a href="#" onclick="showInfo()">About Thyroid Tests</a></p>
+    </footer>
+
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        }
+
+        // Check system preference and stored preference
+        if (localStorage.getItem('darkMode') === 'true' ||
+            (localStorage.getItem('darkMode') === null &&
+                window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Form Validation
+        document.getElementById('predictionForm').onsubmit = function (e) {
+            const numericInputs = ['TSH', 'T3', 'TT4', 'T4U', 'FTI'];
+            let isValid = true;
+
+            numericInputs.forEach(id => {
+                const input = document.getElementById(id);
+                const value = parseFloat(input.value);
+
+                if (isNaN(value) || value < 0) {
+                    input.classList.add('error');
+                    isValid = false;
+                } else {
+                    input.classList.remove('error');
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Please check your input values. All numbers must be positive.');
+            }
+        };
+
+        // Modal Handling
+        function showInfo() {
+            document.getElementById('infoModal').style.display = 'block';
+        }
+
+        // Close modals when clicking X or outside
+        document.querySelectorAll('.close').forEach(elem => {
+            elem.onclick = function () {
+                this.closest('.modal').style.display = 'none';
+            }
+        });
+
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Disable pregnancy option for males
+        document.getElementById('sex').onchange = function () {
+            const pregnantSelect = document.getElementById('pregnant');
+            if (this.value === 'sex_M') {
+                pregnantSelect.value = 'pregnant_f';
+                pregnantSelect.disabled = true;
+            } else {
+                pregnantSelect.disabled = false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('predictionForm');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const submitBtn = document.getElementById('submitBtn');
+            const resultContainer = document.getElementById('resultContainer');
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                // Show loading indicator
+                loadingIndicator.style.display = 'flex';
+
+                // Disable submit button
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+
+                // Submit form
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.text())
+                    .then(html => {
+                        // Parse the response HTML
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        // Find the result container in the response
+                        const newResultContainer = doc.getElementById('resultContainer');
+
+                        if (newResultContainer) {
+                            // Update the result container with new content
+                            resultContainer.innerHTML = newResultContainer.innerHTML;
+
+                            // If there's a result section, show it with animation
+                            const resultSection = resultContainer.querySelector('#resultSection');
+                            if (resultSection) {
+                                resultSection.style.display = 'block';
+                                resultSection.classList.add('fade-in');
+                            }
+                        }
+
+                        // Hide loading indicator
+                        loadingIndicator.style.display = 'none';
+
+                        // Reset submit button
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<span class="btn-text">Analyze Thyroid Function</span><i class="fas fa-arrow-right"></i>';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Show error message
+                        resultContainer.innerHTML = `
+                        <div class="result error fade-in">
+                            <h2>Error: Unable to process request</h2>
+                            <p>Please try again later.</p>
+                        </div>
+                    `;
+
+                        // Hide loading indicator
+                        loadingIndicator.style.display = 'none';
+
+                        // Reset submit button
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<span class="btn-text">Analyze Thyroid Function</span><i class="fas fa-arrow-right"></i>';
+                    });
+            });
+        });
+
+        function toggleDetails() {
+            const details = document.getElementById('explanationDetails');
+            const btn = document.querySelector('.toggle-details-btn');
+
+            if (details) {
+                if (details.style.display === 'none') {
+                    details.style.display = 'grid';
+                    btn.classList.add('active');
+                    details.classList.add('slide-down');
+                } else {
+                    details.classList.remove('slide-down');
+                    btn.classList.remove('active');
+                    details.style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
